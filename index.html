@@ -1,0 +1,1536 @@
+<!doctype html>
+<html lang="vi" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trò Chơi Ôn Tập Hình Học</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    @keyframes celebrate {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .celebrate { animation: celebrate 0.5s ease-in-out; }
+    .shake { animation: shake 0.3s ease-in-out; }
+    .fade-in { animation: fadeIn 0.5s ease-in-out; }
+    .timer-warning { animation: shake 0.5s ease-in-out infinite; }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="h-full">
+  <div id="app" class="h-full w-full overflow-auto"></div>
+  <script>
+    const questions = [
+      // NHẬN BIẾT (10 câu)
+      {
+        id: 1,
+        level: "Nhận biết",
+        question: "Hình thang cân có tính chất nào sau đây?",
+        options: [
+          "Hai cạnh bên bằng nhau",
+          "Hai đường chéo bằng nhau",
+          "Hai góc kề một đáy bằng nhau",
+          "Cả ba tính chất trên"
+        ],
+        correct: 3,
+        explanation: "Hình thang cân có đầy đủ 3 tính chất: hai cạnh bên bằng nhau, hai đ����ờng chéo bằng nhau, và hai góc kề một đáy bằng nhau.",
+        diagram: `<svg viewBox="0 0 200 140" class="w-full max-w-xs mx-auto"><polygon points="50,30 150,30 170,110 30,110" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+      },
+      {
+        id: 2,
+        level: "Nhận biết",
+        question: "Hình bình hành có bao nhiêu cặp cạnh song song?",
+        options: ["1 cặp", "2 cặp", "3 cặp", "Không có"],
+        correct: 1,
+        explanation: "Hình bình hành có 2 cặp cạnh đối song song với nhau (AB // CD và AD // BC).",
+        diagram: `<svg viewBox="0 0 200 120" class="w-full max-w-xs mx-auto"><polygon points="40,30 160,30 140,90 20,90" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+      },
+      {
+        id: 3,
+        level: "Nhận biết",
+        question: "Hình chữ nhật có mấy góc vuông?",
+        options: ["1 góc", "2 góc", "3 góc", "4 góc"],
+        correct: 3,
+        explanation: "Hình chữ nhật có 4 góc vuông (mỗi góc đều bằng 90°).",
+        diagram: `<svg viewBox="0 0 200 120" class="w-full max-w-xs mx-auto"><rect x="40" y="30" width="120" height="60" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+      },
+      {
+        id: 4,
+        level: "Nhận biết",
+        question: "Hình thoi có đặc điểm gì về các cạnh?",
+        options: [
+          "Hai cạnh đối bằng nhau",
+          "Bốn cạnh bằng nhau",
+          "Hai cạnh kề bằng nhau",
+          "Không có cạnh nào bằng nhau"
+        ],
+        correct: 1,
+        explanation: "Hình thoi có tất cả 4 cạnh bằng nhau (AB = BC = CD = DA).",
+        diagram: `<svg viewBox="0 0 200 140" class="w-full max-w-xs mx-auto"><polygon points="100,20 170,70 100,120 30,70" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+      },
+      {
+        id: 5,
+        level: "Nhận biết",
+        question: "Hình vuông là hình có:",
+        options: [
+          "Bốn góc vuông và bốn cạnh bằng nhau",
+          "Chỉ có bốn góc vuông",
+          "Chỉ có bốn cạnh bằng nhau",
+          "Hai đường chéo vuông góc"
+        ],
+        correct: 0,
+        explanation: "Hình vuông vừa có 4 góc vuông vừa có 4 cạnh bằng nhau, là hình đặc biệt nhất trong các t�� giác.",
+        diagram: `<svg viewBox="0 0 200 140" class="w-full max-w-xs mx-auto"><rect x="50" y="30" width="100" height="100" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+      },
+      {
+        id: 6,
+        level: "Nhận biết",
+        question: "Trong hình thang cân, hai góc kề một đáy có quan hệ gì?",
+        options: ["Bằng nhau", "Bù nhau", "Phụ nhau", "Không có quan hệ"],
+        correct: 0,
+        explanation: "Trong hình thang cân, hai góc kề một đáy luôn bằng nhau (ví dụ: ∠A = ∠B).",
+        diagram: `<svg viewBox="0 0 200 120" class="w-full max-w-xs mx-auto"><polygon points="50,20 150,20 170,100 30,100" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+      },
+      {
+        id: 7,
+        level: "Nhận biết",
+        question: "Hai đường chéo của hình bình hành có tính chất gì?",
+        options: [
+          "Bằng nhau",
+          "Vuông góc với nhau",
+          "Cắt nhau tại trung điểm mỗi đường",
+          "Song song với nhau"
+        ],
+        correct: 2,
+        explanation: "Hai đường chéo của hình bình hành cắt nhau tại trung điểm mỗi đường (OA = OC và OB = OD).",
+        diagram: `<svg viewBox="0 0 200 120" class="w-full max-w-xs mx-auto"><polygon points="40,30 160,30 140,90 20,90" fill="none" stroke="currentColor" stroke-width="2"/><line x1="40" y1="30" x2="140" y2="90" stroke="#3b82f6" stroke-width="2"/><line x1="160" y1="30" x2="20" y2="90" stroke="#ef4444" stroke-width="2"/><circle cx="90" cy="60" r="4" fill="#10b981"/></svg>`
+      },
+      {
+        id: 8,
+        level: "Nhận biết",
+        question: "Hình chữ nhật có hai đường chéo:",
+        options: [
+          "Bằng nhau",
+          "Vuông góc",
+          "Song song",
+          "Không cắt nhau"
+        ],
+        correct: 0,
+        explanation: "Hình chữ nhật có hai đường chéo bằng nhau (AC = BD) và cắt nhau tại trung điểm.",
+        diagram: `<svg viewBox="0 0 200 120" class="w-full max-w-xs mx-auto"><rect x="40" y="30" width="120" height="60" fill="none" stroke="currentColor" stroke-width="2"/><line x1="40" y1="30" x2="160" y2="90" stroke="#3b82f6" stroke-width="2"/><line x1="160" y1="30" x2="40" y2="90" stroke="#3b82f6" stroke-width="2"/><circle cx="100" cy="60" r="4" fill="#ef4444"/></svg>`
+      },
+      {
+        id: 9,
+        level: "Nhận biết",
+        question: "Hai đường chéo của hình thoi có tính chất gì?",
+        options: [
+          "Bằng nhau",
+          "Vuông góc với nhau tại trung điểm mỗi đường",
+          "Song song với nhau",
+          "Không có tính chất đặc biệt"
+        ],
+        correct: 1,
+        explanation: "Hai đường chéo của hình thoi vuông góc với nhau tại trung điểm mỗi đường.",
+        diagram: `<svg viewBox="0 0 200 140" class="w-full max-w-xs mx-auto"><polygon points="100,20 170,70 100,120 30,70" fill="none" stroke="currentColor" stroke-width="2"/><line x1="100" y1="20" x2="100" y2="120" stroke="#3b82f6" stroke-width="2"/><line x1="30" y1="70" x2="170" y2="70" stroke="#ef4444" stroke-width="2"/><circle cx="100" cy="70" r="4" fill="#10b981"/></svg>`
+      },
+      {
+        id: 10,
+        level: "Nhận biết",
+        question: "Góc của hình vuông có số đo bằng:",
+        options: ["60°", "80°", "90°", "120°"],
+        correct: 2,
+        explanation: "Tất cả các góc của hình vuông đều là góc vuông, có số đo bằng 90°.",
+        diagram: `<svg viewBox="0 0 200 140" class="w-full max-w-xs mx-auto"><rect x="50" y="30" width="100" height="100" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+      },
+
+      // THÔNG HIỂU (10 câu)
+      {
+        id: 11,
+        level: "Thông hiểu",
+        question: "Hình thang có hai đường chéo bằng nhau thì đó là hình gì?",
+        options: [
+          "Hình thang thường",
+          "Hình thang cân",
+          "Hình bình hành",
+          "Chưa đủ điều kiện kết luận"
+        ],
+        correct: 1,
+        explanation: "Dấu hiệu nhận biết hình thang cân: Hình thang có hai đường chéo bằng nhau là hình thang cân.",
+        diagram: `<svg viewBox="0 0 200 120" class="w-full max-w-xs mx-auto"><polygon points="50,20 150,20 170,100 30,100" fill="none" stroke="currentColor" stroke-width="2"/><line x1="50" y1="20" x2="170" y2="100" stroke="#3b82f6" stroke-width="2" stroke-dasharray="3,3"/><line x1="150" y1="20" x2="30" y2="100" stroke="#3b82f6" stroke-width="2" stroke-dasharray="3,3"/></svg>`
+      },
+      {
+        id: 12,
+        level: "Thông hiểu",
+        question: "Tứ giác có hai cạnh đối song song và bằng nhau là:",
+        options: [
+          "Hình thang",
+          "Hình bình hành",
+          "Hình chữ nhật",
+          "Hình thoi"
+        ],
+        correct: 1,
+        explanation: "Dấu hiệu nhận biết hình bình hành: Tứ giác có hai cạnh đối song song và bằng nhau là hình bình hành.",
+        diagram: `<svg viewBox="0 0 200 120" class="w-full max-w-xs mx-auto"><polygon points="40,30 160,30 140,90 20,90" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+      },
+      {
+        id: 13,
+        level: "Thông hiểu",
+        question: "Hình bình hành có một góc vuông thì đó là hình gì?",
+        options: [
+          "Hình thang cân",
+          "Hình chữ nhật",
+          "Hình thoi",
+          "Hình vuông"
+        ],
+        correct: 1,
+        explanation: "Nếu hình bình hành có một góc vuông thì cả 4 góc đều vuông, do đó nó là hình chữ nhật.",
+        diagram: `<svg viewBox="0 0 200 120" class="w-full max-w-xs mx-auto"><rect x="40" y="30" width="120" height="60" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+      },
+      {
+        id: 14,
+        level: "Thông hiểu",
+        question: "Hình chữ nhật có hai cạnh kề bằng nhau thì đó là:",
+        options: [
+          "Hình bình hành",
+          "Hình thoi",
+          "Hình vuông",
+          "Hình thang cân"
+        ],
+        correct: 2,
+        explanation: "Hình chữ nhật có hai cạnh kề bằng nhau sẽ có cả 4 cạnh bằng nhau, do đó là hình vuông.",
+        diagram: `<svg viewBox="0 0 200 140" class="w-full max-w-xs mx-auto"><rect x="50" y="30" width="100" height="100" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+      },
+      {
+        id: 15,
+        level: "Thông hiểu",
+        question: "Hình thoi có một góc vuông thì đó là:",
+        options: [
+          "Hình chữ nhật",
+          "H��nh vuông",
+          "Hình bình hành",
+          "Không xác định được"
+        ],
+        correct: 1,
+        explanation: "Hình thoi có một góc vuông thì tất cả các góc đều vuông, kết hợp với 4 cạnh bằng nhau nên là hình vuông.",
+        diagram: `<svg viewBox="0 0 200 140" class="w-full max-w-xs mx-auto"><rect x="50" y="30" width="100" height="100" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+      },
+      {
+        id: 16,
+        level: "Thông hiểu",
+        question: "Tứ giác có hai đường chéo bằng nhau và cắt nhau tại trung điểm mỗi đường là:",
+        options: [
+          "Hình thang cân",
+          "Hình bình hành",
+          "Hình chữ nhật",
+          "Hình thoi"
+        ],
+        correct: 2,
+        explanation: "Đây là dấu hiệu nhận biết hình chữ nhật: hai đường chéo bằng nhau và cắt nhau tại trung điểm.",
+        diagram: `<svg viewBox="0 0 200 120" class="w-full max-w-xs mx-auto"><rect x="40" y="30" width="120" height="60" fill="none" stroke="currentColor" stroke-width="2"/><line x1="40" y1="30" x2="160" y2="90" stroke="#3b82f6" stroke-width="2"/><line x1="160" y1="30" x2="40" y2="90" stroke="#3b82f6" stroke-width="2"/><circle cx="100" cy="60" r="4" fill="#ef4444"/></svg>`
+      },
+      {
+        id: 17,
+        level: "Thông hiểu",
+        question: "Tứ giác có hai đường chéo vuông góc và cắt nhau tại trung điểm mỗi đường là:",
+        options: [
+          "Hình bình hành",
+          "Hình chữ nhật",
+          "Hình thoi",
+          "Hình vuông"
+        ],
+        correct: 2,
+        explanation: "Đây là dấu hiệu nhận biết hình thoi: hai đường chéo vuông góc và cắt nhau tại trung điểm.",
+        diagram: `<svg viewBox="0 0 200 140" class="w-full max-w-xs mx-auto"><polygon points="100,20 170,70 100,120 30,70" fill="none" stroke="currentColor" stroke-width="2"/><line x1="100" y1="20" x2="100" y2="120" stroke="#3b82f6" stroke-width="2"/><line x1="30" y1="70" x2="170" y2="70" stroke="#ef4444" stroke-width="2"/><circle cx="100" cy="70" r="4" fill="#10b981"/></svg>`
+      },
+      {
+        id: 18,
+        level: "Thông hiểu",
+        question: "Trong các hình sau, hình nào KHÔNG phải là hình bình hành đặc biệt?",
+        options: [
+          "Hình chữ nhật",
+          "Hình thoi",
+          "Hình vuông",
+          "Hình thang cân"
+        ],
+        correct: 3,
+        explanation: "Hình thang cân không phải là hình bình hành vì chỉ có 1 cặp cạnh song song. Ba hình kia đều là hình bình hành đặc biệt.",
+        diagram: `<svg viewBox="0 0 200 120" class="w-full max-w-xs mx-auto"><polygon points="60,20 140,20 160,100 40,100" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+      },
+      {
+        id: 19,
+        level: "Thông hiểu",
+        question: "Hình bình hành có hai đường chéo bằng nhau là:",
+        options: [
+          "Hình thoi",
+          "Hình chữ nhật",
+          "Hình vuông",
+          "Cả B và C"
+        ],
+        correct: 3,
+        explanation: "Hình bình hành có hai đường chéo bằng nhau là hình chữ nhật. Hình vuông cũng có hai đường chéo bằng nhau nên cả B và C đều đúng.",
+        diagram: `<svg viewBox="0 0 200 120" class="w-full max-w-xs mx-auto"><rect x="40" y="30" width="120" height="60" fill="none" stroke="currentColor" stroke-width="2"/><line x1="40" y1="30" x2="160" y2="90" stroke="#3b82f6" stroke-width="2"/><line x1="160" y1="30" x2="40" y2="90" stroke="#3b82f6" stroke-width="2"/></svg>`
+      },
+      {
+        id: 20,
+        level: "Thông hiểu",
+        question: "Điều kiện nào sau đây KHÔNG đủ để kết luận tứ giác là hình vuông?",
+        options: [
+          "Hình chữ nhật có hai cạnh kề bằng nhau",
+          "Hình thoi có một góc vuông",
+          "Hình bình hành có một góc vuông và hai cạnh kề bằng nhau",
+          "Hình thang cân có bốn cạnh bằng nhau"
+        ],
+        correct: 3,
+        explanation: "Hình thang cân có bốn cạnh bằng nhau chưa đủ để kết luận là hình vuông. Ba điều kiện còn lại đều đ��.",
+        diagram: `<svg viewBox="0 0 200 120" class="w-full max-w-xs mx-auto"><polygon points="50,20 150,20 165,100 35,100" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+      },
+
+      // VẬN DỤNG (10 câu)
+      {
+        id: 21,
+        level: "Vận dụng",
+        question: "Cho tứ giác ABCD có AB // CD, AC = BD. Để ABCD là hình thang cân, cần thêm điều kiện nào?",
+        options: [
+          "AB = CD",
+          "AD = BC",
+          "∠A = ∠B",
+          "Cả B và C"
+        ],
+        correct: 3,
+        explanation: "Để là hình thang cân, cần thêm AD = BC (hai cạnh bên bằng nhau) hoặc ∠A = ∠B (hai góc kề đáy bằng nhau).",
+        diagram: `<svg viewBox="0 0 200 130" class="w-full max-w-xs mx-auto"><polygon points="50,20 150,20 170,100 30,100" fill="none" stroke="currentColor" stroke-width="2"/><line x1="50" y1="20" x2="170" y2="100" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="3,3"/><line x1="150" y1="20" x2="30" y2="100" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="3,3"/></svg>`
+      },
+      {
+        id: 22,
+        level: "Vận dụng",
+        question: "Hình bình hành ABCD có AC ⊥ BD. Vậy ABCD là hình gì?",
+        options: [
+          "Hình chữ nhật",
+          "Hình thoi",
+          "Hình vuông",
+          "Chưa đủ dữ kiện"
+        ],
+        correct: 1,
+        explanation: "Hình bình hành có hai đường chéo vuông góc là hình thoi (dấu hiệu nhận biết hình thoi).",
+        diagram: `<svg viewBox="0 0 200 140" class="w-full max-w-xs mx-auto"><polygon points="100,20 170,70 100,120 30,70" fill="none" stroke="currentColor" stroke-width="2"/><line x1="100" y1="20" x2="100" y2="120" stroke="#3b82f6" stroke-width="2"/><line x1="30" y1="70" x2="170" y2="70" stroke="#ef4444" stroke-width="2"/><circle cx="100" cy="70" r="4" fill="#10b981"/></svg>`
+      },
+      {
+        id: 23,
+        level: "Vận dụng",
+        question: "Cho hình thoi MNPQ có ∠M = 90°. Kết luận nào đúng?",
+        options: [
+          "MNPQ là hình vuông",
+          "MNPQ là hình chữ nhật",
+          "MNPQ vẫn chỉ là hình thoi",
+          "Không xác định được"
+        ],
+        correct: 0,
+        explanation: "Hình thoi có một góc vuông thì tất cả các góc đều vuông, kết hợp 4 cạnh bằng nhau nên là hình vuông.",
+        diagram: `<svg viewBox="0 0 200 140" class="w-full max-w-xs mx-auto"><rect x="50" y="30" width="100" height="100" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+      },
+      {
+        id: 24,
+        level: "Vận dụng",
+        question: "Tứ giác ABCD có AB = BC = CD = DA và AC = BD. ABCD là hình gì?",
+        options: [
+          "Hình thoi",
+          "Hình chữ nhật",
+          "Hình vuông",
+          "Hình bình hành"
+        ],
+        correct: 2,
+        explanation: "4 cạnh bằng nhau → có thể là hình thoi. Thêm AC = BD (hai đường chéo bằng nhau) → là hình vuông.",
+        diagram: `<svg viewBox="0 0 200 140" class="w-full max-w-xs mx-auto"><rect x="50" y="30" width="100" height="100" fill="none" stroke="currentColor" stroke-width="2"/><line x1="50" y1="30" x2="150" y2="130" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="3,3"/><line x1="150" y1="30" x2="50" y2="130" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="3,3"/></svg>`
+      },
+      {
+        id: 25,
+        level: "Vận dụng",
+        question: "Cho hình chữ nhật ABCD. Gọi O là giao điểm hai đường chéo. Biết OA = OB = OC = OD = 5cm. Độ dài đường chéo là:",
+        options: ["5cm", "10cm", "15cm", "20cm"],
+        correct: 1,
+        explanation: "Vì O là trung điểm của AC nên AC = 2 × OA = 2 × 5 = 10cm. Tương tự BD = 10cm.",
+        diagram: `<svg viewBox="0 0 200 140" class="w-full max-w-xs mx-auto"><rect x="40" y="30" width="120" height="60" fill="none" stroke="currentColor" stroke-width="2"/><line x1="40" y1="30" x2="160" y2="90" stroke="#3b82f6" stroke-width="2"/><line x1="160" y1="30" x2="40" y2="90" stroke="#3b82f6" stroke-width="2"/><circle cx="100" cy="60" r="4" fill="#ef4444"/></svg>`
+      },
+      {
+        id: 26,
+        level: "Vận dụng",
+        question: "Hình thang ABCD (AB // CD) có ∠A = ∠B = 90° và AB = CD. Vậy ABCD là:",
+        options: [
+          "Hình thang cân",
+          "Hình bình hành",
+          "Hình chữ nhật",
+          "Cả B và C"
+        ],
+        correct: 3,
+        explanation: "Có AB // CD và AB = CD → hình bình hành. Thêm một góc vuông → hình chữ nhật. Cả B và C đều đúng.",
+        diagram: `<svg viewBox="0 0 200 120" class="w-full max-w-xs mx-auto"><rect x="40" y="30" width="120" height="60" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+      },
+      {
+        id: 27,
+        level: "Vận dụng",
+        question: "Cho tứ giác MNPQ có MN = NP = PQ = QM và MN ⊥ NP. Hỏi MNPQ là hình gì?",
+        options: [
+          "Hình thoi",
+          "Hình vuông",
+          "Hình chữ nhật",
+          "Chưa đủ dữ kiện"
+        ],
+        correct: 1,
+        explanation: "4 cạnh bằng nhau và một góc vuông (MN ⊥ NP tức ∠N = 90°) → là hình vuông.",
+        diagram: `<svg viewBox="0 0 200 140" class="w-full max-w-xs mx-auto"><rect x="50" y="30" width="100" height="100" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+      },
+      {
+        id: 28,
+        level: "Vận dụng",
+        question: "Trong hình bình hành ABCD, nếu ∠A + ∠B = 180° và AC = BD thì ABCD là:",
+        options: [
+          "Hình thoi",
+          "Hình chữ nhật",
+          "Hình vuông",
+          "Không xác định"
+        ],
+        correct: 1,
+        explanation: "∠A + ∠B = 180° là tính chất của hình bình hành (hai góc kề một cạnh bù nhau). Thêm AC = BD → hình chữ nhật.",
+        diagram: `<svg viewBox="0 0 200 120" class="w-full max-w-xs mx-auto"><rect x="40" y="30" width="120" height="60" fill="none" stroke="currentColor" stroke-width="2"/><line x1="40" y1="30" x2="160" y2="90" stroke="#3b82f6" stroke-width="2"/><line x1="160" y1="30" x2="40" y2="90" stroke="#3b82f6" stroke-width="2"/></svg>`
+      },
+      {
+        id: 29,
+        level: "Vận dụng",
+        question: "Tứ giác có hai đường chéo bằng nhau, vuông góc và cắt nhau tại trung điểm mỗi đường là:",
+        options: [
+          "Hình chữ nhật",
+          "Hình thoi",
+          "Hình vuông",
+          "Không tồn tại hình như vậy"
+        ],
+        correct: 2,
+        explanation: "Hai đường chéo cắt nhau tại trung điểm → hình bình hành. Thêm bằng nhau → hình chữ nhật. Thêm vuông góc → hình vuông.",
+        diagram: `<svg viewBox="0 0 200 140" class="w-full max-w-xs mx-auto"><rect x="50" y="30" width="100" height="100" fill="none" stroke="currentColor" stroke-width="2"/><line x1="50" y1="30" x2="150" y2="130" stroke="#3b82f6" stroke-width="2"/><line x1="150" y1="30" x2="50" y2="130" stroke="#3b82f6" stroke-width="2"/><circle cx="100" cy="80" r="4" fill="#ef4444"/></svg>`
+      },
+      {
+        id: 30,
+        level: "Vận dụng",
+        question: "Cho hình thang cân ABCD có AB // CD, AB < CD. Biết ∠A = 60°. Tính ∠C?",
+        options: ["60°", "90°", "120°", "150°"],
+        correct: 2,
+        explanation: "Trong hình thang, hai góc kề một cạnh bên bù nhau. Vậy ∠A + ∠D = 180°, suy ra ∠C = 180° - 60° = 120°.",
+        diagram: `<svg viewBox="0 0 200 130" class="w-full max-w-xs mx-auto"><polygon points="60,20 140,20 170,100 30,100" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+      }
+    ];
+
+    const defaultConfig = {
+      background_color: "#0f172a",
+      surface_color: "#1e293b",
+      text_color: "#f1f5f9",
+      primary_action_color: "#06b6d4",
+      secondary_action_color: "#8b5cf6",
+      font_family: "Arial",
+      font_size: 16,
+      game_title: "Trò Chơi Ôn Tập Hình Học",
+      game_subtitle: "30 Câu Hỏi - Lớp 8 - Chương Trình Kết Nối Tri Thức",
+      start_button_text: "Bắt Đầu Làm Bài",
+      submit_button_text: "Nộp Bài"
+    };
+
+    let currentState = {
+      screen: 'home',
+      currentQuestion: 0,
+      answers: {},
+      explanationViewed: {},
+      studentName: '',
+      score: 0,
+      leaderboardData: [],
+      mode: 'normal',
+      timeRemaining: 30,
+      timerInterval: null,
+      startTime: null,
+      shuffledQuestions: [],
+      showExplanation: false
+    };
+
+    function shuffleArray(array) {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
+    function shuffleQuestion(question) {
+      const correctAnswer = question.options[question.correct];
+      const shuffledOptions = shuffleArray(question.options);
+      const newCorrectIndex = shuffledOptions.indexOf(correctAnswer);
+      
+      return {
+        ...question,
+        options: shuffledOptions,
+        correct: newCorrectIndex
+      };
+    }
+
+    const dataHandler = {
+      onDataChanged(data) {
+        currentState.leaderboardData = data.sort((a, b) => b.total_score - a.total_score);
+        if (currentState.screen === 'leaderboard') {
+          renderApp();
+        }
+      }
+    };
+
+    async function initializeApp() {
+      const sdkResult = await window.dataSdk.init(dataHandler);
+      if (!sdkResult.isOk) {
+        console.error("Failed to initialize Data SDK");
+      }
+
+      await window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: async (config) => {
+          const app = document.getElementById('app');
+          if (!app) return;
+
+          const customFont = config.font_family || defaultConfig.font_family;
+          const baseFontStack = 'Arial, sans-serif';
+          const baseSize = config.font_size || defaultConfig.font_size;
+          const backgroundColor = config.background_color || defaultConfig.background_color;
+          const surfaceColor = config.surface_color || defaultConfig.surface_color;
+          const textColor = config.text_color || defaultConfig.text_color;
+          const primaryColor = config.primary_action_color || defaultConfig.primary_action_color;
+          const secondaryColor = config.secondary_action_color || defaultConfig.secondary_action_color;
+
+          app.style.backgroundColor = backgroundColor;
+          app.style.fontFamily = `${customFont}, ${baseFontStack}`;
+          app.style.color = textColor;
+
+          const titles = app.querySelectorAll('[data-role="title"]');
+          titles.forEach(el => {
+            el.style.fontSize = `${baseSize * 2}px`;
+            el.style.color = textColor;
+          });
+
+          const subtitles = app.querySelectorAll('[data-role="subtitle"]');
+          subtitles.forEach(el => {
+            el.style.fontSize = `${baseSize * 1.125}px`;
+            el.style.color = textColor;
+          });
+
+          const bodyTexts = app.querySelectorAll('[data-role="body"]');
+          bodyTexts.forEach(el => {
+            el.style.fontSize = `${baseSize}px`;
+            el.style.color = textColor;
+          });
+
+          const smallTexts = app.querySelectorAll('[data-role="small"]');
+          smallTexts.forEach(el => {
+            el.style.fontSize = `${baseSize * 0.875}px`;
+            el.style.color = textColor;
+          });
+
+          const surfaces = app.querySelectorAll('[data-role="surface"]');
+          surfaces.forEach(el => {
+            el.style.backgroundColor = surfaceColor;
+          });
+
+          const primaryButtons = app.querySelectorAll('[data-role="primary-button"]');
+          primaryButtons.forEach(el => {
+            el.style.backgroundColor = primaryColor;
+            el.style.color = '#ffffff';
+          });
+
+          const secondaryButtons = app.querySelectorAll('[data-role="secondary-button"]');
+          secondaryButtons.forEach(el => {
+            el.style.backgroundColor = secondaryColor;
+            el.style.color = '#ffffff';
+          });
+
+          const options = app.querySelectorAll('[data-role="option"]');
+          options.forEach(el => {
+            el.style.borderColor = secondaryColor;
+          });
+
+          const gameTitle = app.querySelector('[data-editable="game-title"]');
+          if (gameTitle) {
+            gameTitle.textContent = config.game_title || defaultConfig.game_title;
+          }
+
+          const gameSubtitle = app.querySelector('[data-editable="game-subtitle"]');
+          if (gameSubtitle) {
+            gameSubtitle.textContent = config.game_subtitle || defaultConfig.game_subtitle;
+          }
+
+          const startButton = app.querySelector('[data-editable="start-button"]');
+          if (startButton) {
+            startButton.textContent = config.start_button_text || defaultConfig.start_button_text;
+          }
+
+          const submitButton = app.querySelector('[data-editable="submit-button"]');
+          if (submitButton) {
+            submitButton.textContent = config.submit_button_text || defaultConfig.submit_button_text;
+          }
+        },
+        mapToCapabilities: (config) => ({
+          recolorables: [
+            {
+              get: () => config.background_color || defaultConfig.background_color,
+              set: (value) => {
+                config.background_color = value;
+                window.elementSdk.setConfig({ background_color: value });
+              }
+            },
+            {
+              get: () => config.surface_color || defaultConfig.surface_color,
+              set: (value) => {
+                config.surface_color = value;
+                window.elementSdk.setConfig({ surface_color: value });
+              }
+            },
+            {
+              get: () => config.text_color || defaultConfig.text_color,
+              set: (value) => {
+                config.text_color = value;
+                window.elementSdk.setConfig({ text_color: value });
+              }
+            },
+            {
+              get: () => config.primary_action_color || defaultConfig.primary_action_color,
+              set: (value) => {
+                config.primary_action_color = value;
+                window.elementSdk.setConfig({ primary_action_color: value });
+              }
+            },
+            {
+              get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
+              set: (value) => {
+                config.secondary_action_color = value;
+                window.elementSdk.setConfig({ secondary_action_color: value });
+              }
+            }
+          ],
+          borderables: [],
+          fontEditable: {
+            get: () => config.font_family || defaultConfig.font_family,
+            set: (value) => {
+              config.font_family = value;
+              window.elementSdk.setConfig({ font_family: value });
+            }
+          },
+          fontSizeable: {
+            get: () => config.font_size || defaultConfig.font_size,
+            set: (value) => {
+              config.font_size = value;
+              window.elementSdk.setConfig({ font_size: value });
+            }
+          }
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ["game_title", config.game_title || defaultConfig.game_title],
+          ["game_subtitle", config.game_subtitle || defaultConfig.game_subtitle],
+          ["start_button_text", config.start_button_text || defaultConfig.start_button_text],
+          ["submit_button_text", config.submit_button_text || defaultConfig.submit_button_text]
+        ])
+      });
+
+      renderApp();
+    }
+
+    function renderApp() {
+      const app = document.getElementById('app');
+      const config = window.elementSdk ? window.elementSdk.config : defaultConfig;
+
+      if (currentState.screen === 'home') {
+        renderHome();
+      } else if (currentState.screen === 'quiz') {
+        renderQuiz();
+      } else if (currentState.screen === 'result') {
+        renderResult();
+      } else if (currentState.screen === 'leaderboard') {
+        renderLeaderboard();
+      } else if (currentState.screen === 'stats') {
+        renderStats();
+      }
+    }
+
+    function renderHome() {
+      const app = document.getElementById('app');
+      const config = window.elementSdk ? window.elementSdk.config : defaultConfig;
+
+      app.innerHTML = `
+        <div class="min-h-full flex items-center justify-center p-6">
+          <div data-role="surface" class="rounded-lg shadow-xl p-8 max-w-2xl w-full text-center fade-in">
+            <div class="mb-2">
+              <span data-role="small" class="inline-block px-3 py-1 rounded-full" style="background-color: rgba(59, 130, 246, 0.1);">
+                Toán Hình Học
+              </span>
+            </div>
+            <h1 data-role="title" data-editable="game-title" class="font-bold mb-4">
+              ${config.game_title || defaultConfig.game_title}
+            </h1>
+            <p data-role="subtitle" data-editable="game-subtitle" class="mb-8">
+              ${config.game_subtitle || defaultConfig.game_subtitle}
+            </p>
+            <div class="mb-6">
+              <input
+                type="text"
+                id="student-name"
+                placeholder="Nhập tên của bạn..."
+                data-role="body"
+                class="w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2"
+                style="border-color: ${config.secondary_action_color || defaultConfig.secondary_action_color}; background-color: ${config.surface_color || defaultConfig.surface_color};"
+              >
+              <label for="student-name" class="sr-only">Tên học sinh</label>
+            </div>
+            
+            <div class="mb-6 p-4 rounded-lg" style="background-color: rgba(59, 130, 246, 0.05);">
+              <p data-role="body" class="font-semibold mb-3">Chọn chế độ chơi:</p>
+              <div class="space-y-3">
+                <button
+                  id="mode-normal"
+                  class="mode-btn w-full p-4 rounded-lg border-2 text-left transition-all"
+                  style="border-color: ${config.primary_action_color || defaultConfig.primary_action_color}; background-color: rgba(59, 130, 246, 0.1);"
+                >
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p data-role="body" class="font-bold">📚 Chế đ��� Thông thường</p>
+                      <p data-role="small">Không giới hạn thời gian, tập trung học tập</p>
+                    </div>
+                    <span class="text-2xl">✓</span>
+                  </div>
+                </button>
+                <button
+                  id="mode-timed"
+                  class="mode-btn w-full p-4 rounded-lg border-2 text-left transition-all"
+                  style="border-color: ${config.secondary_action_color || defaultConfig.secondary_action_color};"
+                >
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p data-role="body" class="font-bold">⏱️ Chế độ Thời gian</p>
+                      <p data-role="small">30 giây/câu, thử thách kỹ năng</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <button
+                id="start-btn"
+                data-role="primary-button"
+                data-editable="start-button"
+                class="w-full py-4 rounded-lg font-semibold transition-opacity hover:opacity-90"
+              >
+                ${config.start_button_text || defaultConfig.start_button_text}
+              </button>
+              <div class="grid grid-cols-2 gap-4">
+                <button
+                  id="leaderboard-btn"
+                  data-role="secondary-button"
+                  class="py-3 rounded-lg font-semibold transition-opacity hover:opacity-90"
+                >
+                  🏆 Bảng Xếp Hạng
+                </button>
+                <button
+                  id="stats-btn"
+                  data-role="secondary-button"
+                  class="py-3 rounded-lg font-semibold transition-opacity hover:opacity-90"
+                >
+                  📊 Thống Kê
+                </button>
+              </div>
+            </div>
+            <div data-role="small" class="mt-6 space-y-2">
+              <p>📊 30 câu hỏi với 3 cấp độ</p>
+              <p>✅ Nhận biết • 💡 Thông hiểu • 🎯 Vận dụng</p>
+              <p>🔀 Câu hỏi và đáp án được xáo trộn mỗi lần chơi</p>
+              <p>📖 Giải thích chi tiết sau mỗi câu hỏi</p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const normalBtn = document.getElementById('mode-normal');
+      const timedBtn = document.getElementById('mode-timed');
+      
+      function updateModeButtons() {
+        const config = window.elementSdk ? window.elementSdk.config : defaultConfig;
+        if (currentState.mode === 'normal') {
+          normalBtn.style.borderColor = config.primary_action_color || defaultConfig.primary_action_color;
+          normalBtn.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+          normalBtn.querySelector('span').textContent = '✓';
+          timedBtn.style.borderColor = config.secondary_action_color || defaultConfig.secondary_action_color;
+          timedBtn.style.backgroundColor = 'transparent';
+          timedBtn.querySelector('span') && (timedBtn.querySelector('span').textContent = '');
+        } else {
+          timedBtn.style.borderColor = config.primary_action_color || defaultConfig.primary_action_color;
+          timedBtn.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+          if (!timedBtn.querySelector('span')) {
+            timedBtn.querySelector('div').insertAdjacentHTML('beforeend', '<span class="text-2xl">✓</span>');
+          } else {
+            timedBtn.querySelector('span').textContent = '✓';
+          }
+          normalBtn.style.borderColor = config.secondary_action_color || defaultConfig.secondary_action_color;
+          normalBtn.style.backgroundColor = 'transparent';
+          normalBtn.querySelector('span').textContent = '';
+        }
+      }
+
+      normalBtn.addEventListener('click', () => {
+        currentState.mode = 'normal';
+        updateModeButtons();
+      });
+
+      timedBtn.addEventListener('click', () => {
+        currentState.mode = 'timed';
+        updateModeButtons();
+      });
+
+      document.getElementById('start-btn').addEventListener('click', startQuiz);
+      document.getElementById('leaderboard-btn').addEventListener('click', () => {
+        currentState.screen = 'leaderboard';
+        renderApp();
+      });
+      document.getElementById('stats-btn').addEventListener('click', () => {
+        currentState.screen = 'stats';
+        renderApp();
+      });
+    }
+
+    function startQuiz() {
+      const nameInput = document.getElementById('student-name');
+      const name = nameInput.value.trim();
+      
+      if (!name) {
+        const messageDiv = document.createElement('div');
+        messageDiv.textContent = 'Vui lòng nhập tên của bạn!';
+        messageDiv.className = 'mt-2 p-2 rounded';
+        messageDiv.style.backgroundColor = '#fee2e2';
+        messageDiv.style.color = '#991b1b';
+        messageDiv.setAttribute('data-role', 'small');
+        
+        const existingMessage = nameInput.parentElement.querySelector('[data-role="small"][style*="fee2e2"]');
+        if (existingMessage) {
+          existingMessage.remove();
+        }
+        
+        nameInput.parentElement.appendChild(messageDiv);
+        
+        setTimeout(() => messageDiv.remove(), 3000);
+        return;
+      }
+
+      currentState.studentName = name;
+      currentState.screen = 'quiz';
+      currentState.currentQuestion = 0;
+      currentState.answers = {};
+      currentState.explanationViewed = {};
+      currentState.startTime = Date.now();
+      currentState.shuffledQuestions = questions.map(q => shuffleQuestion(q));
+      
+      if (currentState.mode === 'timed') {
+        currentState.timeRemaining = 30;
+        startTimer();
+      }
+      
+      renderApp();
+    }
+
+    function startTimer() {
+      if (currentState.timerInterval) {
+        clearInterval(currentState.timerInterval);
+      }
+      
+      currentState.timeRemaining = 30;
+      currentState.timerInterval = setInterval(() => {
+        currentState.timeRemaining--;
+        
+        const timerEl = document.getElementById('timer');
+        if (timerEl) {
+          timerEl.textContent = currentState.timeRemaining;
+          if (currentState.timeRemaining <= 5) {
+            timerEl.parentElement.classList.add('timer-warning');
+          }
+        }
+        
+        if (currentState.timeRemaining <= 0) {
+          clearInterval(currentState.timerInterval);
+          nextQuestion();
+        }
+      }, 1000);
+    }
+
+    function nextQuestion() {
+      if (currentState.currentQuestion < currentState.shuffledQuestions.length - 1) {
+        currentState.currentQuestion++;
+        if (currentState.mode === 'timed') {
+          startTimer();
+        }
+        renderQuiz();
+      } else {
+        submitQuiz();
+      }
+    }
+
+    function renderQuiz() {
+      const app = document.getElementById('app');
+      const config = window.elementSdk ? window.elementSdk.config : defaultConfig;
+      const question = currentState.shuffledQuestions[currentState.currentQuestion];
+      const progress = ((currentState.currentQuestion + 1) / currentState.shuffledQuestions.length) * 100;
+
+      const levelColors = {
+        'Nhận biết': '#10b981',
+        'Thông hiểu': '#f59e0b',
+        'Vận dụng': '#ef4444'
+      };
+
+      const levelEmojis = {
+        'Nhận biết': '✅',
+        'Thông hiểu': '💡',
+        'Vận dụng': '🎯'
+      };
+
+      const userAnswer = currentState.answers[question.id];
+      const isAnswered = userAnswer !== undefined;
+      const showExplanation = currentState.explanationViewed[question.id] === true;
+
+      app.innerHTML = `
+        <div class="min-h-full p-4">
+          <div class="max-w-3xl mx-auto">
+            <div class="mb-6 fade-in">
+              <div class="flex justify-between items-center mb-2">
+                <span data-role="body" class="font-semibold">Câu ${currentState.currentQuestion + 1}/${currentState.shuffledQuestions.length}</span>
+                <div class="flex items-center gap-3">
+                  <span data-role="small" class="px-3 py-1 rounded-full" style="background-color: ${levelColors[question.level]}20; color: ${levelColors[question.level]};">
+                    ${levelEmojis[question.level]} ${question.level}
+                  </span>
+                  ${currentState.mode === 'timed' ? `
+                    <div class="flex items-center gap-2 px-3 py-1 rounded-full ${currentState.timeRemaining <= 5 ? 'timer-warning' : ''}" style="background-color: ${currentState.timeRemaining <= 5 ? '#fee2e2' : 'rgba(100, 116, 139, 0.1)'}; color: ${currentState.timeRemaining <= 5 ? '#991b1b' : '#64748b'};">
+                      <span>⏱️</span>
+                      <span data-role="body" class="font-bold" id="timer">${currentState.timeRemaining}</span>
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+              <div class="w-full h-2 rounded-full" style="background-color: rgba(100, 116, 139, 0.2);">
+                <div class="h-2 rounded-full transition-all duration-300" style="width: ${progress}%; background-color: ${config.primary_action_color || defaultConfig.primary_action_color};"></div>
+              </div>
+            </div>
+
+            <div data-role="surface" class="rounded-lg shadow-lg p-6 mb-6">
+              <h2 data-role="subtitle" class="font-bold mb-4">${question.question}</h2>
+              
+              ${question.diagram ? `
+                <div class="mb-6 p-4 rounded-lg" style="background-color: rgba(100, 116, 139, 0.05);">
+                  ${question.diagram}
+                </div>
+              ` : ''}
+
+              <div class="space-y-3">
+                ${question.options.map((option, index) => {
+                  const isSelected = userAnswer === index;
+                  const isCorrect = index === question.correct;
+                  const showCorrect = showExplanation && isCorrect;
+                  const showWrong = showExplanation && isSelected && !isCorrect;
+                  
+                  return `
+                    <button
+                      class="quiz-option w-full text-left p-4 rounded-lg border-2 transition-all ${isSelected && !showExplanation ? 'selected-option' : ''} ${showExplanation ? 'cursor-default' : 'hover:shadow-md'}"
+                      data-role="option"
+                      data-index="${index}"
+                      ${showExplanation ? 'disabled' : ''}
+                      style="border-color: ${showCorrect ? '#10b981' : showWrong ? '#ef4444' : isSelected ? config.primary_action_color || defaultConfig.primary_action_color : config.secondary_action_color || defaultConfig.secondary_action_color}; background-color: ${showCorrect ? 'rgba(16, 185, 129, 0.1)' : showWrong ? 'rgba(239, 68, 68, 0.1)' : isSelected ? (config.primary_action_color || defaultConfig.primary_action_color) + '10' : 'transparent'};"
+                    >
+                      <span data-role="body" class="flex items-start justify-between">
+                        <span class="flex items-start flex-1">
+                          <span class="font-bold mr-3">${String.fromCharCode(65 + index)}.</span>
+                          <span>${option}</span>
+                        </span>
+                        ${showCorrect ? '<span class="text-2xl ml-2">✅</span>' : ''}
+                        ${showWrong ? '<span class="text-2xl ml-2">❌</span>' : ''}
+                      </span>
+                    </button>
+                  `;
+                }).join('')}
+              </div>
+
+              ${showExplanation ? `
+                <div class="mt-6 p-4 rounded-lg" style="background-color: rgba(59, 130, 246, 0.1); border-left: 4px solid ${config.primary_action_color || defaultConfig.primary_action_color};">
+                  <p data-role="body" class="font-bold mb-2">💡 Giải thích:</p>
+                  <p data-role="body">${question.explanation}</p>
+                </div>
+              ` : ''}
+            </div>
+
+            <div class="flex gap-4 flex-wrap">
+              ${currentState.currentQuestion > 0 ? `
+                <button
+                  id="prev-btn"
+                  data-role="secondary-button"
+                  class="px-6 py-3 rounded-lg font-semibold transition-opacity hover:opacity-90"
+                >
+                  ← Câu trước
+                </button>
+              ` : ''}
+              
+              ${!showExplanation && isAnswered ? `
+                <button
+                  id="check-btn"
+                  data-role="secondary-button"
+                  class="px-6 py-3 rounded-lg font-semibold transition-opacity hover:opacity-90"
+                >
+                  📖 Xem Giải Thích
+                </button>
+              ` : ''}
+
+              ${isAnswered ? `
+                ${currentState.currentQuestion < currentState.shuffledQuestions.length - 1 ? `
+                  <button
+                    id="next-btn"
+                    data-role="primary-button"
+                    class="flex-1 py-3 rounded-lg font-semibold transition-opacity hover:opacity-90"
+                  >
+                    Câu tiếp theo →
+                  </button>
+                ` : `
+                  <button
+                    id="submit-btn"
+                    data-role="primary-button"
+                    data-editable="submit-button"
+                    class="flex-1 py-3 rounded-lg font-semibold transition-opacity hover:opacity-90"
+                  >
+                    ${config.submit_button_text || defaultConfig.submit_button_text}
+                  </button>
+                `}
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+
+      if (!showExplanation) {
+        const options = app.querySelectorAll('.quiz-option');
+        options.forEach(option => {
+          option.addEventListener('click', (e) => {
+            const index = parseInt(e.currentTarget.dataset.index);
+            currentState.answers[question.id] = index;
+            
+            if (currentState.mode === 'timed') {
+              clearInterval(currentState.timerInterval);
+            }
+            
+            renderQuiz();
+          });
+        });
+      }
+
+      const prevBtn = document.getElementById('prev-btn');
+        if (prevBtn) {
+          prevBtn.addEventListener('click', () => {
+            if (currentState.mode === 'timed') {
+              clearInterval(currentState.timerInterval);
+            }
+            currentState.currentQuestion--;
+            if (currentState.mode === 'timed') {
+              startTimer();
+            }
+            renderQuiz();
+          });
+        }
+      }
+
+      const checkBtn = document.getElementById('check-btn');
+      if (checkBtn) {
+        checkBtn.addEventListener('click', () => {
+          if (currentState.mode === 'timed') {
+            clearInterval(currentState.timerInterval);
+          }
+          currentState.explanationViewed[question.id] = true;
+          renderQuiz();
+        });
+      }
+
+      const nextBtn = document.getElementById('next-btn');
+      if (nextBtn) {
+        nextBtn.addEventListener('click', nextQuestion);
+      }
+
+      const submitBtn = document.getElementById('submit-btn');
+      if (submitBtn) {
+        submitBtn.addEventListener('click', submitQuiz);
+      }
+    }
+
+    async function submitQuiz() {
+      if (currentState.timerInterval) {
+        clearInterval(currentState.timerInterval);
+      }
+
+      if (Object.keys(currentState.answers).length < currentState.shuffledQuestions.length) {
+        const unanswered = currentState.shuffledQuestions.length - Object.keys(currentState.answers).length;
+        const confirmDiv = document.createElement('div');
+        confirmDiv.className = 'fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50';
+        confirmDiv.style.backgroundColor = '#fef3c7';
+        confirmDiv.style.color = '#92400e';
+        confirmDiv.innerHTML = `
+          <p data-role="body" class="font-semibold mb-2">Bạn chưa trả lời hết các câu hỏi!</p>
+          <p data-role="small">Còn ${unanswered} câu chưa trả lời sẽ bị tính là sai.</p>
+          <div class="mt-3 flex gap-2">
+            <button id="confirm-submit" class="px-4 py-2 rounded" style="background-color: #92400e; color: white;">Nộp bài</button>
+            <button id="cancel-submit" class="px-4 py-2 rounded" style="background-color: #d97706; color: white;">Quay lại</button>
+          </div>
+        `;
+        document.body.appendChild(confirmDiv);
+        
+        document.getElementById('confirm-submit').addEventListener('click', () => {
+          confirmDiv.remove();
+          finalizeSubmit();
+        });
+        
+        document.getElementById('cancel-submit').addEventListener('click', () => {
+          confirmDiv.remove();
+        });
+        return;
+      }
+
+      finalizeSubmit();
+    }
+
+    async function finalizeSubmit() {
+      const app = document.getElementById('app');
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50';
+      loadingDiv.style.backgroundColor = '#3b82f6';
+      loadingDiv.style.color = 'white';
+      loadingDiv.innerHTML = '<p data-role="body">Đang tính điểm...</p>';
+      app.appendChild(loadingDiv);
+
+      let correct = 0;
+      currentState.shuffledQuestions.forEach(q => {
+        if (currentState.answers[q.id] === q.correct) {
+          correct++;
+        }
+      });
+
+      const timeTaken = Math.floor((Date.now() - currentState.startTime) / 1000);
+      currentState.score = correct;
+      currentState.screen = 'result';
+
+      const result = await window.dataSdk.create({
+        student_name: currentState.studentName,
+        total_score: correct,
+        correct_answers: correct,
+        completed_at: new Date().toISOString(),
+        time_taken: timeTaken,
+        mode: currentState.mode
+      });
+
+      loadingDiv.remove();
+
+      if (!result.isOk) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50';
+        errorDiv.style.backgroundColor = '#fee2e2';
+        errorDiv.style.color = '#991b1b';
+        errorDiv.innerHTML = `<p data-role="body">Không thể lưu kết quả. Vui lòng thử lại.</p>`;
+        app.appendChild(errorDiv);
+        setTimeout(() => errorDiv.remove(), 3000);
+      }
+
+      renderApp();
+    }
+
+    function renderResult() {
+      const app = document.getElementById('app');
+      const config = window.elementSdk ? window.elementSdk.config : defaultConfig;
+      const percentage = (currentState.score / currentState.shuffledQuestions.length) * 100;
+      
+      let grade, message, emoji;
+      if (percentage >= 90) {
+        grade = "Xuất sắc";
+        message = "Bạn đã nắm vững kiến thức!";
+        emoji = "🏆";
+      } else if (percentage >= 75) {
+        grade = "Giỏi";
+        message = "Bạn làm bài rất tốt!";
+        emoji = "🌟";
+      } else if (percentage >= 60) {
+        grade = "Khá";
+        message = "Bạn cần ôn tập thêm một chút!";
+        emoji = "👍";
+      } else if (percentage >= 40) {
+        grade = "Trung bình";
+        message = "Hãy cố gắng ôn tập nhiều hơn!";
+        emoji = "📚";
+      } else {
+        grade = "Yếu";
+        message = "Bạn cần học lại kiến thức!";
+        emoji = "💪";
+      }
+
+      const detailedResults = currentState.shuffledQuestions.map(q => ({
+        question: q,
+        userAnswer: currentState.answers[q.id],
+        isCorrect: currentState.answers[q.id] === q.correct
+      }));
+
+      const correctByLevel = {
+        'Nhận biết': 0,
+        'Thông hiểu': 0,
+        'Vận dụng': 0
+      };
+
+      const totalByLevel = {
+        'Nhận biết': 0,
+        'Thông hiểu': 0,
+        'Vận dụng': 0
+      };
+
+      detailedResults.forEach(r => {
+        totalByLevel[r.question.level]++;
+        if (r.isCorrect) {
+          correctByLevel[r.question.level]++;
+        }
+      });
+
+      const timeTaken = Math.floor((Date.now() - currentState.startTime) / 1000);
+      const minutes = Math.floor(timeTaken / 60);
+      const seconds = timeTaken % 60;
+
+      app.innerHTML = `
+        <div class="min-h-full p-4">
+          <div class="max-w-4xl mx-auto">
+            <div data-role="surface" class="rounded-lg shadow-xl p-8 mb-6 text-center celebrate">
+              <div class="text-6xl mb-4">${emoji}</div>
+              <h1 data-role="title" class="font-bold mb-2">${grade}</h1>
+              <p data-role="subtitle" class="mb-6">${message}</p>
+              
+              <div class="inline-block px-8 py-4 rounded-lg mb-6" style="background-color: ${config.primary_action_color || defaultConfig.primary_action_color}20;">
+                <p data-role="body" class="mb-2">Kết quả của <span class="font-bold">${currentState.studentName}</span></p>
+                <p data-role="title" class="font-bold" style="color: ${config.primary_action_color || defaultConfig.primary_action_color};">
+                  ${currentState.score}/${currentState.shuffledQuestions.length}
+                </p>
+                <p data-role="body">${percentage.toFixed(1)}%</p>
+                <p data-role="small" class="mt-2">⏱️ Thời gian: ${minutes}:${seconds.toString().padStart(2, '0')}</p>
+                <p data-role="small">🎮 Chế độ: ${currentState.mode === 'timed' ? 'Thời gian' : 'Thông thường'}</p>
+              </div>
+
+              <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="p-4 rounded-lg" style="background-color: rgba(16, 185, 129, 0.1);">
+                  <p data-role="small" class="mb-1">✅ Nhận biết</p>
+                  <p data-role="body" class="font-bold">${correctByLevel['Nhận biết']}/${totalByLevel['Nhận biết']}</p>
+                  <p data-role="small">${((correctByLevel['Nhận biết']/totalByLevel['Nhận biết'])*100).toFixed(0)}%</p>
+                </div>
+                <div class="p-4 rounded-lg" style="background-color: rgba(245, 158, 11, 0.1);">
+                  <p data-role="small" class="mb-1">💡 Thông hiểu</p>
+                  <p data-role="body" class="font-bold">${correctByLevel['Thông hiểu']}/${totalByLevel['Thông hiểu']}</p>
+                  <p data-role="small">${((correctByLevel['Thông hiểu']/totalByLevel['Thông hiểu'])*100).toFixed(0)}%</p>
+                </div>
+                <div class="p-4 rounded-lg" style="background-color: rgba(239, 68, 68, 0.1);">
+                  <p data-role="small" class="mb-1">🎯 Vận dụng</p>
+                  <p data-role="body" class="font-bold">${correctByLevel['Vận dụng']}/${totalByLevel['Vận dụng']}</p>
+                  <p data-role="small">${((correctByLevel['Vận dụng']/totalByLevel['Vận dụng'])*100).toFixed(0)}%</p>
+                </div>
+              </div>
+
+              <div class="flex gap-4 justify-center flex-wrap">
+                <button
+                  id="review-btn"
+                  data-role="primary-button"
+                  class="px-6 py-3 rounded-lg font-semibold transition-opacity hover:opacity-90"
+                >
+                  📝 Xem Chi Tiết
+                </button>
+                <button
+                  id="leaderboard-result-btn"
+                  data-role="secondary-button"
+                  class="px-6 py-3 rounded-lg font-semibold transition-opacity hover:opacity-90"
+                >
+                  🏆 Bảng Xếp Hạng
+                </button>
+                <button
+                  id="retry-btn"
+                  data-role="secondary-button"
+                  class="px-6 py-3 rounded-lg font-semibold transition-opacity hover:opacity-90"
+                >
+                  🔄 Làm Lại
+                </button>
+              </div>
+            </div>
+
+            <div id="detailed-results" class="space-y-4" style="display: none;">
+              ${detailedResults.map((r, index) => `
+                <div data-role="surface" class="rounded-lg p-4 border-l-4 fade-in" style="border-color: ${r.isCorrect ? '#10b981' : '#ef4444'};">
+                  <div class="flex items-start justify-between mb-2">
+                    <p data-role="body" class="font-semibold flex-1">Câu ${index + 1}: ${r.question.question}</p>
+                    <span class="text-2xl ml-2">${r.isCorrect ? '✅' : '❌'}</span>
+                  </div>
+                  
+                  ${r.question.diagram ? `
+                    <div class="mb-4 p-3 rounded-lg" style="background-color: rgba(100, 116, 139, 0.05);">
+                      ${r.question.diagram}
+                    </div>
+                  ` : ''}
+
+                  <div class="space-y-2 mb-3">
+                    ${r.question.options.map((opt, optIndex) => `
+                      <div class="p-2 rounded ${optIndex === r.question.correct ? 'font-semibold' : ''}" 
+                           style="background-color: ${optIndex === r.question.correct ? 'rgba(16, 185, 129, 0.1)' : optIndex === r.userAnswer && !r.isCorrect ? 'rgba(239, 68, 68, 0.1)' : 'transparent'};">
+                        <span data-role="small">
+                          ${String.fromCharCode(65 + optIndex)}. ${opt}
+                          ${optIndex === r.question.correct ? ' �� Đáp án đúng' : ''}
+                          ${optIndex === r.userAnswer && !r.isCorrect ? ' ✗ Bạn đã chọn' : ''}
+                          ${r.userAnswer === undefined && optIndex === 0 ? ' (Không trả lời)' : ''}
+                        </span>
+                      </div>
+                    `).join('')}
+                  </div>
+
+                  <div class="p-3 rounded-lg" style="background-color: rgba(59, 130, 246, 0.1);">
+                    <p data-role="small" class="font-bold mb-1">💡 Giải thích:</p>
+                    <p data-role="small">${r.question.explanation}</p>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('review-btn').addEventListener('click', () => {
+        const detailsDiv = document.getElementById('detailed-results');
+        if (detailsDiv.style.display === 'none') {
+          detailsDiv.style.display = 'block';
+          document.getElementById('review-btn').textContent = '🔼 Ẩn Chi Tiết';
+          detailsDiv.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          detailsDiv.style.display = 'none';
+          document.getElementById('review-btn').textContent = '📝 Xem Chi Tiết';
+        }
+      });
+
+      document.getElementById('leaderboard-result-btn').addEventListener('click', () => {
+        currentState.screen = 'leaderboard';
+        renderApp();
+      });
+      
+      document.getElementById('retry-btn').addEventListener('click', () => {
+        currentState.screen = 'home';
+        currentState.currentQuestion = 0;
+        currentState.answers = {};
+        currentState.score = 0;
+        renderApp();
+      });
+    }
+
+    function renderLeaderboard() {
+      const app = document.getElementById('app');
+      const config = window.elementSdk ? window.elementSdk.config : defaultConfig;
+
+      app.innerHTML = `
+        <div class="min-h-full p-4">
+          <div class="max-w-3xl mx-auto">
+            <div data-role="surface" class="rounded-lg shadow-xl p-6 mb-6 fade-in">
+              <div class="text-center mb-6">
+                <div class="text-4xl mb-2">🏆</div>
+                <h1 data-role="title" class="font-bold mb-2">Bảng Xếp Hạng</h1>
+                <p data-role="body">Top học sinh xuất sắc</p>
+              </div>
+
+              ${currentState.leaderboardData.length === 0 ? `
+                <div class="text-center py-12">
+                  <p data-role="body" class="mb-4">Chưa có kết quả nào!</p>
+                  <p data-role="small">Hãy là người đầu tiên làm bài nhé 🎯</p>
+                </div>
+              ` : `
+                <div class="space-y-3">
+                  ${currentState.leaderboardData.slice(0, 10).map((entry, index) => {
+                    const medals = ['🥇', '🥈', '🥉'];
+                    const percentage = (entry.total_score / questions.length) * 100;
+                    const minutes = Math.floor(entry.time_taken / 60);
+                    const seconds = entry.time_taken % 60;
+                    return `
+                      <div class="flex items-center p-4 rounded-lg transition-all hover:shadow-md" 
+                           style="background-color: ${index < 3 ? 'rgba(59, 130, 246, 0.05)' : 'transparent'}; border: 2px solid ${index < 3 ? config.primary_action_color || defaultConfig.primary_action_color : config.secondary_action_color || defaultConfig.secondary_action_color}20;">
+                        <span class="text-2xl mr-4 w-10">${index < 3 ? medals[index] : `#${index + 1}`}</span>
+                        <div class="flex-1">
+                          <p data-role="body" class="font-bold">${entry.student_name}</p>
+                          <p data-role="small">${new Date(entry.completed_at).toLocaleDateString('vi-VN')} • ${entry.mode === 'timed' ? '⏱️ Thời gian' : '📚 Thông thường'}</p>
+                          <p data-role="small">⏱️ ${minutes}:${seconds.toString().padStart(2, '0')}</p>
+                        </div>
+                        <div class="text-right">
+                          <p data-role="body" class="font-bold" style="color: ${config.primary_action_color || defaultConfig.primary_action_color};">
+                            ${entry.total_score}/${questions.length}
+                          </p>
+                          <p data-role="small">${percentage.toFixed(1)}%</p>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              `}
+            </div>
+
+            <button
+              id="back-btn"
+              data-role="secondary-button"
+              class="w-full py-3 rounded-lg font-semibold transition-opacity hover:opacity-90"
+            >
+              ← Quay Lại
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('back-btn').addEventListener('click', () => {
+        currentState.screen = 'home';
+        renderApp();
+      });
+    }
+
+    function renderStats() {
+      const app = document.getElementById('app');
+      const config = window.elementSdk ? window.elementSdk.config : defaultConfig;
+
+      const myScores = currentState.leaderboardData.filter(entry => 
+        entry.student_name === currentState.studentName
+      );
+
+      let avgScore = 0;
+      let bestScore = 0;
+      let totalAttempts = myScores.length;
+      let avgTime = 0;
+
+      if (myScores.length > 0) {
+        avgScore = myScores.reduce((sum, entry) => sum + entry.total_score, 0) / myScores.length;
+        bestScore = Math.max(...myScores.map(entry => entry.total_score));
+        avgTime = myScores.reduce((sum, entry) => sum + entry.time_taken, 0) / myScores.length;
+      }
+
+      const recentScores = myScores.slice(0, 5);
+
+      app.innerHTML = `
+        <div class="min-h-full p-4">
+          <div class="max-w-4xl mx-auto">
+            <div data-role="surface" class="rounded-lg shadow-xl p-6 mb-6 fade-in">
+              <div class="text-center mb-6">
+                <div class="text-4xl mb-2">📊</div>
+                <h1 data-role="title" class="font-bold mb-2">Thống Kê Tiến Bộ</h1>
+                <p data-role="body">Theo dõi kết quả học tập của bạn</p>
+              </div>
+
+              ${myScores.length === 0 ? `
+                <div class="text-center py-12">
+                  <p data-role="body" class="mb-4">Bạn chưa có kết quả nào!</p>
+                  <p data-role="small">Hãy bắt đầu làm bài để xem thống kê nhé 📚</p>
+                </div>
+              ` : `
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  <div class="p-4 rounded-lg text-center" style="background-color: rgba(59, 130, 246, 0.1);">
+                    <p data-role="small" class="mb-1">Số lần làm</p>
+                    <p data-role="title" class="font-bold" style="color: ${config.primary_action_color || defaultConfig.primary_action_color};">${totalAttempts}</p>
+                  </div>
+                  <div class="p-4 rounded-lg text-center" style="background-color: rgba(16, 185, 129, 0.1);">
+                    <p data-role="small" class="mb-1">Điểm cao nhất</p>
+                    <p data-role="title" class="font-bold" style="color: #10b981;">${bestScore}/${questions.length}</p>
+                  </div>
+                  <div class="p-4 rounded-lg text-center" style="background-color: rgba(245, 158, 11, 0.1);">
+                    <p data-role="small" class="mb-1">Điểm TB</p>
+                    <p data-role="title" class="font-bold" style="color: #f59e0b;">${avgScore.toFixed(1)}</p>
+                  </div>
+                  <div class="p-4 rounded-lg text-center" style="background-color: rgba(139, 92, 246, 0.1);">
+                    <p data-role="small" class="mb-1">Thời gian TB</p>
+                    <p data-role="title" class="font-bold" style="color: #8b5cf6;">${Math.floor(avgTime/60)}:${(Math.floor(avgTime)%60).toString().padStart(2,'0')}</p>
+                  </div>
+                </div>
+
+                <div class="mb-6">
+                  <h2 data-role="subtitle" class="font-bold mb-4">📈 Biểu Đồ Tiến Bộ</h2>
+                  <div class="p-4 rounded-lg" style="background-color: rgba(100, 116, 139, 0.05);">
+                    <div class="space-y-3">
+                      ${recentScores.reverse().map((entry, index) => {
+                        const percentage = (entry.total_score / questions.length) * 100;
+                        return `
+                          <div>
+                            <div class="flex justify-between mb-1">
+                              <span data-role="small">Lần ${recentScores.length - index}</span>
+                              <span data-role="small" class="font-bold">${entry.total_score}/${questions.length} (${percentage.toFixed(0)}%)</span>
+                            </div>
+                            <div class="w-full h-4 rounded-full" style="background-color: rgba(100, 116, 139, 0.2);">
+                              <div class="h-4 rounded-full transition-all" style="width: ${percentage}%; background-color: ${percentage >= 80 ? '#10b981' : percentage >= 60 ? '#f59e0b' : '#ef4444'};"></div>
+                            </div>
+                          </div>
+                        `;
+                      }).join('')}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h2 data-role="subtitle" class="font-bold mb-4">📝 Lịch Sử Gần Đây</h2>
+                  <div class="space-y-3">
+                    ${myScores.slice(0, 5).map((entry, index) => {
+                      const percentage = (entry.total_score / questions.length) * 100;
+                      const minutes = Math.floor(entry.time_taken / 60);
+                      const seconds = entry.time_taken % 60;
+                      return `
+                        <div class="p-4 rounded-lg border-2" style="border-color: ${config.secondary_action_color || defaultConfig.secondary_action_color}20; background-color: transparent;">
+                          <div class="flex justify-between items-start">
+                            <div>
+                              <p data-role="body" class="font-bold mb-1">${new Date(entry.completed_at).toLocaleDateString('vi-VN')}</p>
+                              <p data-role="small">${new Date(entry.completed_at).toLocaleTimeString('vi-VN')} • ${entry.mode === 'timed' ? '⏱️ Thời gian' : '📚 Thông thường'}</p>
+                              <p data-role="small">⏱️ ${minutes}:${seconds.toString().padStart(2, '0')}</p>
+                            </div>
+                            <div class="text-right">
+                              <p data-role="body" class="font-bold" style="color: ${config.primary_action_color || defaultConfig.primary_action_color};">
+                                ${entry.total_score}/${questions.length}
+                              </p>
+                              <p data-role="small">${percentage.toFixed(1)}%</p>
+                            </div>
+                          </div>
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+              `}
+            </div>
+
+            <button
+              id="back-btn"
+              data-role="secondary-button"
+              class="w-full py-3 rounded-lg font-semibold transition-opacity hover:opacity-90"
+            >
+              ← Quay Lại
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('back-btn').addEventListener('click', () => {
+        currentState.screen = 'home';
+        renderApp();
+      });
+    }
+
+    initializeApp();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b635781a6e8079e',t:'MTc2NzExNjYzMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
